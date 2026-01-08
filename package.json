@@ -1,0 +1,44 @@
+{
+  "name": "learning",
+  "version": "1.0.0",
+  "description": "learning with ammar omar",
+  "keywords": [
+    "learn",
+    "bussiness"
+  ],
+  "homepage": "https://github.com/eslambashry/learn-with-ammar-omar#readme",
+  "bugs": {
+    "url": "https://github.com/eslambashry/learn-with-ammar-omar/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eslambashry/learn-with-ammar-omar.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start":"nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@colors/colors": "^1.6.0",
+    "bcrypt": "^6.0.0",
+    "config": "^4.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "imagekit": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.2",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "nanoid": "^5.1.6",
+    "nodemailer": "^7.0.12",
+    "nodemon": "^3.1.11",
+    "slugify": "^1.6.6",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
