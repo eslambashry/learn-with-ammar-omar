@@ -19,12 +19,14 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "start":"nodemon app.js",
+    "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@colors/colors": "^1.6.0",
+    "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "config": "^4.1.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
