@@ -33,7 +33,17 @@ const userSchema = new Schema({
     isBlocked: {
         type: Boolean,
         default: false
-    }
+    },
+    image: {
+      secure_url: {
+        type: String,
+      },
+      public_id: {
+        type: String,
+      },
+    },
+    customId:String
+
 }, { timestamps: true });
 
 export const userModel = model('User', userSchema);

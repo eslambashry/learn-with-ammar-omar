@@ -1,4 +1,7 @@
 import * as authService from "./auth.service.js";
+import { customAlphabet } from 'nanoid'
+import imagekit, { destroyImage } from "../../utilities/imagekitConfigration.js"
+const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 5)
 
 export const register = async (req, res, next) => {
   try {
@@ -48,13 +51,27 @@ export const getOneUsers = async (req, res, next) => {
 export const addUser = async (req, res, next) => {
   try {
     const { userName, email, password, role } = req.body;
-    const user = await authService.createNewUser({
+
+    const customId = nanoid();
+  
+     const uploadResult = await imagekit.upload({
+       file: req.file.buffer,
+       fileName: req.file.originalname,
+       folder: `${process.env.PROJECT_FOLDER}/User/${customId}`,
+     });
+
+    const user = await authService.addUserWithImage({
       userName,
       email,
       password,
       role,
-      file: req.file
-    });
+       image: {
+         secure_url: uploadResult.url, 
+         public_id: uploadResult.fileId,
+       },   
+      customId
+     });
+     
     res.status(201).json({
       success: true,
       message: "User created successfully",
