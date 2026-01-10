@@ -59,7 +59,7 @@ export const swaggerSetup = (app) => {
 };
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT
 
 app.use(express.json());
 app.use(cors());
@@ -71,7 +71,6 @@ swaggerSetup(app);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/courses', courseRouter);
 app.use('/api/v1/enroll', enrollmentRouter);
-app.get('/', (req, res) => res.send('Welcome to LMS API 📚'));
 
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
@@ -82,4 +81,8 @@ app.use((err, req, res, next) => {
     });
 });
 
+export default function handler(req, res) {
+  app(req, res);
+}
+app.get('/', (req, res) => res.send('Welcome to LMS API 📚'));
 app.listen(port, () => console.log(`App Running On Port ${port}`.green.bold + " 🚀"));
