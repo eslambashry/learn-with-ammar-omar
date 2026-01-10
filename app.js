@@ -21,8 +21,12 @@ export const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:8080",
-        description: "Development server",
+        url: "http://localhost:8080/",
+        description: "Local server",
+      },
+      {
+        url: "https://learn-with-ammar-omar.vercel.app/",
+        description: "Deployment server",
       },
     ],
     components: {
@@ -79,6 +83,50 @@ app.use((err, req, res, next) => {
         message: err.message,
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
+});
+
+app.get("/api-docs", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>API Docs</title>
+
+      <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.5/swagger-ui.min.css" />
+
+      <style>
+        body { margin: 0; padding: 0; }
+      </style>
+    </head>
+
+    <body>
+      <div id="swagger-ui"></div>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.5/swagger-ui-bundle.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.5/swagger-ui-standalone-preset.min.js"></script>
+
+      <script>
+        window.onload = function () {
+          SwaggerUIBundle({
+            url: '/swagger.json',
+            dom_id: '#swagger-ui',
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+            ],
+            layout: "StandaloneLayout",
+          });
+        };
+      </script>
+    </body>
+    </html>
+  `);
+});
+
+app.get("/swagger.json", (req, res) => {
+  res.json(swaggerSpec);
 });
 
 export default function handler(req, res) {
