@@ -10,6 +10,7 @@ var imagekit = new ImageKit({
 });
 
 
+
 export const destroyImage = async (fileId) => {
     try {
       

@@ -1,11 +1,12 @@
 import { Schema, model, Types } from 'mongoose';
 
 const courseSchema = new Schema({
-    title: {
-        type: String,
-        required: true,
-        trim: true
-    },
+    title: { type: String, required: true },
+    bunnyCollectionId: { type: String }, // Folder ID on Bunny
+    chapters: [{
+        title: { type: String, required: true }, // مقدمة، الشابتر الأول، الخ
+        videos: [{ type: Schema.Types.ObjectId, ref: 'Video' }]
+    }],
     description: {
         type: String,
         trim: true

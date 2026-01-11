@@ -13,6 +13,30 @@ import { CustomError } from './customError.js';
  * @param {number} expiresInSeconds - Time in seconds until the link expires (default 1 hour)
  * @returns {string} - The signed authorization query parameters or full URL
  */
+export const createCollection = async (collectionName) => {
+    const { BUNNY_LIBRARY_ID, BUNNY_API_KEY } = process.env;
+
+    if (!BUNNY_LIBRARY_ID || !BUNNY_API_KEY) {
+        throw new CustomError("Bunny config missing", 500);
+    }
+
+    try {
+        const response = await axios.post(
+            `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/collections`,
+            { name: collectionName },
+            {
+                headers: {
+                    AccessKey: BUNNY_API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data; // هيرجع الـ GUID الخاص بالـ Collection
+    } catch (error) {
+        throw new CustomError(`Bunny Collection Error: ${error.response?.data?.message || error.message}`, 500);
+    }
+};
+
 export const generateSignedUrl = (videoId, expiresInSeconds = 3600) => {
     const BUNNY_TOKEN_KEY = process.env.BUNNY_TOKEN_KEY;
     if (!BUNNY_TOKEN_KEY) {
@@ -39,18 +63,17 @@ export const generateSignedUrl = (videoId, expiresInSeconds = 3600) => {
  * Upload a video to Bunny Stream (Server-side init, returns videoId)
  * Usually, we create the video object first, then upload the file using that ID.
  */
-export const createVideoEntry = async (title) => {
-    const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID;
-    const BUNNY_API_KEY = process.env.BUNNY_API_KEY;
-
-    if (!BUNNY_LIBRARY_ID || !BUNNY_API_KEY) {
-        throw new CustomError("BUNNY_LIBRARY_ID or BUNNY_API_KEY missing", 500);
-    }
-
+export const createVideoEntry = async (title, collectionId) => {
+    const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID
+    const BUNNY_API_KEY = process.env.BUNNY_API_KEY
+    
     try {
         const response = await axios.post(
             `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`,
-            { title },
+            { 
+                title, 
+                collectionId // هنا الفيديو هينزل جوه الفولدر أوتوماتيك
+            },
             {
                 headers: {
                     AccessKey: BUNNY_API_KEY,
@@ -58,12 +81,11 @@ export const createVideoEntry = async (title) => {
                 }
             }
         );
-        return response.data; // Contains guid (videoId)
+        return response.data;
     } catch (error) {
-        throw new CustomError(`BunnyCreate Error: ${error.message}`, 500);
+        throw new CustomError(`Bunny Video Error: ${error.response?.data?.message || error.message}`, 500);
     }
 };
-
 export const deleteVideoEntry = async (bunnyVideoId) => {
     const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID;
     const BUNNY_API_KEY = process.env.BUNNY_API_KEY;

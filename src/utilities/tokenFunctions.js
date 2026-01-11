@@ -33,7 +33,6 @@ export const generateToken = ({
 
 export const verifyToken = (token) => {
   if (!token) return false;
-  console.log(token);
   
   return jwt.verify(
     token,

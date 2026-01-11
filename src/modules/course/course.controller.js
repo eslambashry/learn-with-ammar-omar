@@ -13,12 +13,16 @@ export const createCourse = async (req, res, next) => {
         if(req.user.role != "Instructor"){
             return next(new CustomError("Not authorized to create course only Instructor can", 403));
         }
+        // 1. إنشاء Folder (Collection) في باني باسم الكورس
+        const bunnyCollection = await bunnyStream.createCollection(title);
+
         const instructorId = req.user._id;
         const course = await courseModel.create({
             title,
             description,
             price,
-            instructorId
+            instructorId,
+            bunnyCollectionId: bunnyCollection.guid // حفظ الـ Folder ID
         });
 
         res.status(201).json({ success: true, message: "Course created successfully", course });
@@ -30,7 +34,7 @@ export const createCourse = async (req, res, next) => {
 // Add Video to Course (Step 1: Create Video Entry in Bunny & DB)
 export const addVideo = async (req, res, next) => {
     try {
-        const { courseId, title } = req.body;
+        const { courseId, title ,chapterTitle} = req.body;
 
         // Verify Course Exists & Ownership
         const course = await courseModel.findById(courseId);
@@ -38,9 +42,9 @@ export const addVideo = async (req, res, next) => {
         if (course.instructorId.toString() !== req.user._id.toString()) {
             return next(new CustomError("Not authorized to add videos to this course", 403));
         }
-
+        
         // 1. Create Video Placeholder in Bunny.net
-        const bunnyVideo = await bunnyStream.createVideoEntry(title);
+        const bunnyVideo = await bunnyStream.createVideoEntry(title,course.bunnyCollectionId);
         
         // 2. Save Metadata to DB
         const count = await videoModel.countDocuments({ courseId });
@@ -50,6 +54,20 @@ export const addVideo = async (req, res, next) => {
             bunnyVideoId: bunnyVideo.guid,
             order: count + 1
         });
+        
+        // Find if chapter already exists
+        const chapterIndex = course.chapters.findIndex(ch => ch.title === chapterTitle);
+        
+        if (chapterIndex !== -1) {
+            // Add to existing chapter
+            course.chapters[chapterIndex].videos.push(video._id);
+        } else {
+            // Create new chapter and add video
+            course.chapters.push({
+                title: chapterTitle || "General", // Default to General if no title provided
+                videos: [video._id]
+            });
+        }
 
         res.status(201).json({ 
             success: true, 
