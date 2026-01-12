@@ -28,7 +28,12 @@ const courseSchema = new Schema({
     isPublished: {
         type: Boolean,
         default: false
-    }
-}, { timestamps: true });
+    },
+    image:{
+        secure_url: { type: String, required: true },
+        public_id: { type: String, required: true }
+    },
+},{ timestamps: true });
 
 export const courseModel = model('Course', courseSchema);
+

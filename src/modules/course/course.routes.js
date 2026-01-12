@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import * as courseController from './course.controller.js';
 import { isAuth } from '../../middleware/isAuth.js';
+import { allowedExtensions } from '../../utilities/allowedExtensions.js';
+import { multerCloudFunction } from '../../services/multerCloud.js';
 
 const router = Router();
 
@@ -42,7 +44,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.post('/create', isAuth, courseController.createCourse);
+router.post('/create', isAuth,multerCloudFunction(allowedExtensions.Image).single('image'), courseController.createCourse);
 
 
 /**

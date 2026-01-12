@@ -3,6 +3,10 @@ import { videoModel } from '../../../DB/model/video.model.js';
 import { enrollmentModel } from '../../../DB/model/enrollment.model.js';
 import { CustomError } from '../../utilities/customError.js';
 import * as bunnyStream from '../../utilities/bunnyStream.js';
+import imagekit from '../../utilities/imagekitConfigration.js';
+import { customAlphabet } from 'nanoid'
+
+const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 5)
 
 // Create a new Course
 export const createCourse = async (req, res, next) => {
@@ -17,13 +21,30 @@ export const createCourse = async (req, res, next) => {
         const bunnyCollection = await bunnyStream.createCollection(title);
 
         const instructorId = req.user._id;
+
+        let uploadResult 
+
+        if (req.file) {
+            // Upload image to ImageKit
+        const customId = nanoid();
+
+             uploadResult = await imagekit.upload({
+              file: req.file.buffer,
+              fileName: req.file.originalname,
+              folder: `${process.env.PROJECT_FOLDER}/Course/${customId}`,
+            });
+          }
         const course = await courseModel.create({
             title,
             description,
             price,
             instructorId,
-            bunnyCollectionId: bunnyCollection.guid // حفظ الـ Folder ID
-        });
+            bunnyCollectionId: bunnyCollection.guid, // حفظ الـ Folder ID
+            image: {
+                secure_url: uploadResult.url, 
+                public_id: uploadResult.fileId,
+            },        
+    });
 
         res.status(201).json({ success: true, message: "Course created successfully", course });
     } catch (error) {
