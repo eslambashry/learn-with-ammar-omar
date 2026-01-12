@@ -227,3 +227,11 @@ export const getVideoUrl = async (req, res, next) => {
         next(error);
     }
 };
+
+
+export const getAllCourses = async (req,res,next) =>{
+
+}
+export const getAllVideosForCourses = async (req,res,next) =>{
+
+}

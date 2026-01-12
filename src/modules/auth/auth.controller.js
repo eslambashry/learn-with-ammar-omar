@@ -51,7 +51,8 @@ export const getOneUsers = async (req, res, next) => {
 export const addUser = async (req, res, next) => {
   try {
     const { userName, email, password, role } = req.body;
-
+    console.log(req.file);
+    
     const customId = nanoid();
   
      const uploadResult = await imagekit.upload({

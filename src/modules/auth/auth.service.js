@@ -26,31 +26,29 @@ export const registerUser = async (userData) => {
 };
 
 export const addUserWithImage = async (userData) => {
-    const { userName, email, password, role ,image  ,customId} = userData;
-    
-    // Check if email exists
-    if (await userModel.findOne({ email })) {
-        throw new CustomError("Email already exists", 409);
-    }
+  const { userName, email, password, role, image, customId } = userData;
 
-    const imageURL = image.secure_url
-    const imageId = image.public_id
+  if (await userModel.findOne({ email })) {
+    throw new CustomError("Email already exists", 409);
+  }
 
-    const hashedPassword = bcrypt.hashSync(password, 8);
-    const user = await userModel.create({
-        userName,
-        email,
-        password: hashedPassword,
-        role: role || 'Student',
-        image:{
-            secure_url:imageURL,
-            public_id:imageId
-        },
-      customId
-    });
+  const hashedPassword = bcrypt.hashSync(password, 8);
 
-    return user;
+  const user = await userModel.create({
+    userName,
+    email,
+    password: hashedPassword,
+    role: role || "Student",
+    image: {
+      secure_url: image.secure_url,
+      public_id: image.public_id,
+    },
+    customId,
+  });
+
+  return user;
 };
+
 // Login
 export const loginUser = async ({ email, password }) => {
     const user = await userModel.findOne({ email });
