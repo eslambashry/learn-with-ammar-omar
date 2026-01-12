@@ -14,7 +14,7 @@ const userRouter = Router();
 
 /**
  * @swagger
- * /api/v1/users/register:
+ * /api/v1/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Users]
@@ -46,7 +46,7 @@ userRouter.post('/register', userCon.register);
 
 /**
  * @swagger
- * /api/v1/users/login:
+ * /api/v1/auth/login:
  *   post:
  *     summary: Login user
  *     tags: [Users]
@@ -95,7 +95,7 @@ userRouter.get('/:id', userCon.getOneUsers);
 
 /**
  * @swagger
- * /api/v1/users/add:
+ * /api/v1/auth/add:
  *   post:
  *     summary: Add a user (Admin only)
  *     tags: [Users]
@@ -127,7 +127,7 @@ userRouter.post('/add', multerCloudFunction(allowedExtensions.Image).single("ima
 
 /**
  * @swagger
- * /api/v1/users/{id}:
+ * /api/v1/auth/{id}:
  *   put:
  *     summary: Update user data
  *     tags: [Users]
@@ -169,7 +169,7 @@ userRouter.put(
 
 /**
  * @swagger
- * /api/v1/users/{id}:
+ * /api/v1/auth/{id}:
  *   delete:
  *     summary: Delete user
  *     tags: [Users]
@@ -187,7 +187,7 @@ userRouter.delete('/:id', userCon.deleteUser);
 
 /**
  * @swagger
- * /api/v1/users/logout:
+ * /api/v1/auth/logout:
  *   post:
  *     summary: Logout user
  *     tags: [Users]
@@ -210,7 +210,7 @@ userRouter.post('/logout', userCon.logout);
 
 /**
  * @swagger
- * /api/v1/users/forget-password:
+ * /api/v1/auth/forget-password:
  *   post:
  *     summary: Send reset password email
  *     tags: [Users]
@@ -233,7 +233,7 @@ userRouter.post('/forget-password', userCon.forgetPassword);
 
 /**
  * @swagger
- * /api/v1/users/reset/{token}:
+ * /api/v1/auth/reset/{token}:
  *   post:
  *     summary: Reset password using token
  *     tags: [Users]
@@ -263,7 +263,7 @@ userRouter.post('/reset/:token', userCon.resetPassword);
 
 /**
  * @swagger
- * /api/v1/users/change_password:
+ * /api/v1/auth/change_password:
  *   post:
  *     summary: Change user password
  *     tags: [Users]
@@ -290,7 +290,7 @@ userRouter.post('/change_password', userCon.changePassword);
 
 /**
  * @swagger
- * /api/v1/users/multy:
+ * /api/v1/auth/multy:
  *   post:
  *     summary: Delete multiple users
  *     tags: [Users]
