@@ -1,5 +1,7 @@
 import { userModel } from '../../../DB/model/user.model.js';
+import { sendEmailService } from '../../services/sendEmail.js';
 import { CustomError } from '../../utilities/customError.js';
+import { emailTemplate } from '../../utilities/emailTemplate.js';
 import { generateToken } from '../../utilities/tokenFunctions.js';
 import bcrypt from 'bcryptjs';
 
@@ -124,45 +126,58 @@ export const initiateForgotPasswordService = async (email) => {
     const user = await userModel.findOne({ email });
     if (!user) throw new CustomError("Email not found", 404);
 
-    // Generate Verify Token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  
+    const code = nanoid()
+    const hashcode = pkg.hashSync(code, +process.env.SALT_ROUNDS) // ! process.env.SALT_ROUNDS
+    const token = generateToken({
+        payload:{
+            email,
+            sendCode:hashcode,
+        },
+        signature: process.env.RESET_TOKEN, // ! process.env.RESET_TOKEN
+        expiresIn: '1h',
+    })
+    const resetPasswordLink = `${req.protocol}://${req.headers.host}/user/reset/${token}`
+    const isEmailSent = sendEmailService({
+        to:email,
+        subject: "Reset Password",
+        message: emailTemplate({
+            link:resetPasswordLink,
+            linkData:"Click Here Reset Password",
+            subject: "Reset Password",
+        }),
+    })
+    if(!isEmailSent){
+        return res.status(400).json({message:"Email not found"})
+    }
 
-    // Save to User (Exipre in 10 mins)
-    // Note: You might need to add these fields to User Schema if they don't exist
-    // Or just use a separate Token model. For simplicity, let's assume we can add them to User or basic implementation.
-    // Ideally: user.passwordResetToken = hashedToken; user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-    // Since schema is strict, we should update the schema or use a flexible field if available.
-    // For this strict schema, let's assume we added these fields or use 'currentSessionToken' as a hack (NOT RECOMMENDED for prod but ok for this quick generic task if schema is locked).
-    // BETTER: Let's assume schema allows it or I'll instruct to add it.
-    
-    // *Wait, I recall the User schema I saw earlier didn't have resetToken fields.* 
-    // I will skip saving to DB for a second and check Schema in next step, or just use a simple in-memory cache/log for this specific learning task if Schema modification is too much churn.
-    // actually, let's stick to the plan: "Generate token & simulate email".
-    // I'll add the fields to the schema in the same turn or next. 
-    
-    // Let's implement assuming fields exist, and I'll update schema right after.
-    user.resetVerifyToken = hashedToken; // We need to add this to schema
-    await user.save();
-
-    console.log(`[MOCK EMAIL] Password Reset Link: http://localhost:3000/api/v1/auth/reset/${resetToken}`);
-    return user;
+    const userupdete = await userModel.findOneAndUpdate(
+        {email},
+        {forgetCode:hashcode},
+        {new: true},
+    )
+    return res.status(200).json({message:"password changed",userupdete})
 };
 
 // Reset Password
 export const resetPasswordService = async (token, newPassword) => {
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    // Find user with this token
-    // We need to query by the field we added
-    const user = await userModel.findOne({ resetVerifyToken: hashedToken });
-    
-    if (!user) throw new CustomError("Invalid or expired token", 400);
 
-    user.password = bcrypt.hashSync(newPassword, 8);
-    user.resetVerifyToken = undefined; // Clear token
-    await user.save();
-    
-    return user;
+    const decoded = verifyToken({token, signature: process.env.RESET_TOKEN}) // ! process.env.RESET_TOKEN
+    const user = await userModel.findOne({
+        email: decoded?.email,
+        fotgetCode: decoded?.sentCode
+    })
+
+    if(!user){
+        return res.status(400).json({message: "you are alreade reset it , try to login"})
+    }
+
+    const hashedPassword = pkg.hashSync(newPassword, +process.env.SALT_ROUNDS)
+    user.password = hashedPassword,
+    user.forgetCode = null
+
+    const updatedUser = await user.save()
+    res.status(200).json({message: "Done",updatedUser})
 };
 
 // Change Password (Logged in)

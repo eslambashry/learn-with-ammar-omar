@@ -7,79 +7,95 @@ export const emailTemplate = ({ link, linkData, subject }) => {
     body {
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
-      background-color: #FFFFFF;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #F4F6F8;
     }
 
     .email-container {
-      width: 60%;
-      margin: 30px auto;
+      width: 600px;
+      max-width: 95%;
+      margin: 40px auto;
       background-color: #FFFFFF;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
+    /* ===== HEADER ===== */
     .header {
-      background-color: #15AC9E;
-      padding: 25px;
+      background: linear-gradient(135deg, #1A3F51, #153443);
+      padding: 30px 20px;
       text-align: center;
     }
 
     .logo svg {
-      max-width: 180px;
+      max-width: 170px;
       height: auto;
+      fill: #FFFFFF;
     }
 
     .header a {
-      color: #FFFFFF;
-      font-size: 13px;
-      text-decoration: underline;
       display: inline-block;
-      margin-top: 10px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #D5A939;
+      text-decoration: none;
     }
 
+    /* ===== CONTENT ===== */
     .content {
-      padding: 35px 30px;
+      padding: 40px 30px;
       text-align: center;
-      color: #787878;
+      color: #4A4A4A;
     }
 
     .content h1 {
-      color: #15AC9E;
-      margin-bottom: 15px;
-      font-size: 24px;
+      color: #1A3F51;
+      font-size: 26px;
+      margin-bottom: 18px;
     }
 
     .content p {
       font-size: 16px;
-      line-height: 1.6;
+      line-height: 1.7;
+      margin-bottom: 25px;
     }
 
+    /* ===== BUTTON ===== */
     .button {
       display: inline-block;
-      padding: 14px 32px;
-      background-color: #15AC9E;
-      color: #FFFFFF !important;
+      padding: 14px 36px;
+      background-color: #D5A939;
+      color: #1A3F51 !important;
       text-decoration: none;
-      border-radius: 6px;
-      margin-top: 25px;
+      border-radius: 30px;
       font-weight: bold;
       font-size: 15px;
+      letter-spacing: 0.5px;
     }
 
+    /* ===== FOOTER ===== */
     .footer {
-      padding: 20px;
+      padding: 22px;
       text-align: center;
-      font-size: 14px;
-      color: #787878;
-      background-color: #F7F7F7;
-      border-top: 1px solid #E5E5E5;
+      font-size: 13px;
+      color: #8A8A8A;
+      background-color: #F1F3F5;
+      border-top: 1px solid #E2E6EA;
     }
 
-    @media (max-width: 768px) {
-      .email-container {
-        width: 95%;
+    .footer span {
+      color: #1A3F51;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .content {
+        padding: 30px 20px;
+      }
+
+      .content h1 {
+        font-size: 22px;
       }
     }
   </style>
@@ -88,29 +104,36 @@ export const emailTemplate = ({ link, linkData, subject }) => {
 <body>
   <div class="email-container">
 
+    <!-- HEADER -->
     <div class="header">
       <div class="logo">
-        <!-- MACC SVG LOGO -->
-        <svg width="180" height="99" viewBox="0 0 180 99" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g clip-path="url(#clip0)">
-            <path d="M131.72 68.75L130.641 65.8774L129.576 68.75H131.72Z" fill="#000"/>
-            <!-- SVG PATHS SHORTENED FOR BREVITY -->
-          </g>
+        <!-- Your SVG Logo -->
+        <svg width="180" height="99" viewBox="0 0 180 99" xmlns="http://www.w3.org/2000/svg">
+          <text x="50%" y="50%" text-anchor="middle" fill="#FFFFFF" font-size="22" font-weight="bold" dy=".3em">
+            MOHAMMED ALHABSI
+          </text>
         </svg>
       </div>
-
-      <a href="https://your-website.com" target="_blank">View on Website</a>
+      <a href="https://edu-smart-al-habsi-8dk2.vercel.app/" target="_blank">View on Website</a>
     </div>
 
+    <!-- CONTENT -->
     <div class="content">
       <h1>${subject}</h1>
-      <p>Please click the button below to continue.</p>
-      <a href="${link}" class="button">${linkData}</a>
+      <p>
+        Please click the button below to continue.  
+        If you did not request this action, you can safely ignore this email.
+      </p>
+
+      <a href="${link}" class="button">
+        ${linkData}
+      </a>
     </div>
 
+    <!-- FOOTER -->
     <div class="footer">
-      Stay connected with us<br/>
-      &copy; ${new Date().getFullYear()} MACC. All rights reserved.
+      Stay connected with <span>MOHAMMED ALHABSI</span><br/>
+      &copy; ${new Date().getFullYear()} MOHAMMED ALHABSI. All rights reserved.
     </div>
 
   </div>

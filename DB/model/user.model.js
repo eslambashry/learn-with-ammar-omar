@@ -34,6 +34,9 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
+    forgetCode:{
+        type:String
+    },
     image: {
       secure_url: {
         type: String,
