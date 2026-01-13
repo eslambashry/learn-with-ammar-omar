@@ -4,6 +4,8 @@ import { CustomError } from '../../utilities/customError.js';
 import { emailTemplate } from '../../utilities/emailTemplate.js';
 import { generateToken } from '../../utilities/tokenFunctions.js';
 import bcrypt from 'bcryptjs';
+import { customAlphabet } from 'nanoid'
+const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 5)
 
 // Register
 export const registerUser = async (userData) => {
@@ -14,7 +16,7 @@ export const registerUser = async (userData) => {
         throw new CustomError("Email already exists", 409);
     }
 
-    const hashedPassword = bcrypt.hashSync(password, 8);
+    const hashedPassword = bcrypt.hashSync(password, +process.env.SALT_ROUNDS);
     const user = await userModel.create({
         userName,
         email,
@@ -88,13 +90,34 @@ export const getAllUsersService = async () => userModel.find();
 export const getOneUserService = async (id) => userModel.findById(id);
 export const createNewUser = async (data) => registerUser(data); // Re-use register
 import crypto from 'crypto';
+import imagekit, { destroyImage } from '../../utilities/imagekitConfigration.js';
 
 // Update User
 export const updateUserService = async ({ id, ...updateData }) => {
     // Prevent updating critical fields directly if needed, for now allow all passed
     // But we should re-hash password if it's being updated
+    const customId = nanoid();
+    
+    const exsistedUser = await userModel.findById(id)
+    
+    if(updateData.file){
+        if(exsistedUser.image.public_id){
+            await destroyImage(exsistedUser.image.public_id);  
+        }
+   
+     const uploadResult = await imagekit.upload({
+       file: updateData.file.buffer, 
+       fileName: updateData.file.originalname,  
+       folder: `${process.env.PROJECT_FOLDER}/User/${customId}`, 
+     });
+        updateData.image = {
+            secure_url: uploadResult.url,
+            public_id: uploadResult.fileId,
+        };
+        updateData.customId = customId
+   }
     if (updateData.password) {
-        updateData.password = bcrypt.hashSync(updateData.password, 8);
+        updateData.password = bcrypt.hashSync(updateData.password, +process.env.SALT_ROUNDS);
     }
     
     const user = await userModel.findByIdAndUpdate(id, updateData, { new: true });

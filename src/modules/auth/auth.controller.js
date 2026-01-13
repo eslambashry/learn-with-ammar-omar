@@ -86,6 +86,13 @@ export const addUser = async (req, res, next) => {
 export const UpdateUser = async (req, res, next) => {
   try {
     const { userName, email, password, role, isActive } = req.body;
+   
+    
+    let imagefile = null 
+    if(req.file){
+      imagefile = req.file
+    }
+    
     const user = await authService.updateUserService({
       id: req.params.id,
       userName,
@@ -93,7 +100,7 @@ export const UpdateUser = async (req, res, next) => {
       password,
       role,
       isActive: isActive === undefined ? undefined : isActive, // pass undefined if it's undefined
-      file: req.file
+      file: imagefile
     });
     res.status(200).json({ message: "user updated successfully", user });
   } catch (error) {

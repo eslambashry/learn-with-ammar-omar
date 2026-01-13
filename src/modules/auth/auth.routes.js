@@ -71,7 +71,7 @@ userRouter.post('/register', userCon.register);
 userRouter.post('/login', userCon.login);
 /**
  * @swagger
- * /api/v1/users:
+ * /api/v1/auth:
  *   get:
  *     summary: Get all users
  *     tags: [Users]
