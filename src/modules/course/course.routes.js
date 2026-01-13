@@ -70,6 +70,8 @@ router.post('/create', isAuth,multerCloudFunction(allowedExtensions.Image).singl
 router.get('/:id', isAuth, courseController.getCourse);
 
 
+
+
 /**
  * @swagger
  * /api/v1/courses/{id}:
@@ -206,5 +208,29 @@ router.delete('/video/:videoId', isAuth, courseController.deleteVideo);
  *         description: Video not found
  */
 router.get('/video/:videoId/sign', isAuth, courseController.getVideoUrl);
+
+
+
+
+/**
+ * @swagger
+ * /api/v1/courses/all/courses
+ *   get:
+ *     summary: Get All courses  
+ *     tags: [Courses]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Courses retrieved successfully
+ *       404:
+ *         description: Courses not found
+ */
+router.get('/all/courses', isAuth, courseController.getAllCourses);
 
 export default router;

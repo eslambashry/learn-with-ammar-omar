@@ -119,6 +119,7 @@ export const getCourse = async (req, res, next) => {
     }
 };
 
+
 // Update Course
 export const updateCourse = async (req, res, next) => {
     try {
@@ -189,7 +190,6 @@ export const deleteVideo = async (req, res, next) => {
     }
 };
 
-
 // Get Signed URL for a Video (Secure Playback)
 export const getVideoUrl = async (req, res, next) => {
     try {
@@ -229,9 +229,17 @@ export const getVideoUrl = async (req, res, next) => {
 };
 
 
-export const getAllCourses = async (req,res,next) =>{
+export const getAllCourses = async (req, res, next) => {
+    try {
+        const courses = await courseModel.find().populate('instructorId','userName image')
+        if (!courses) return next(new CustomError("Course not found", 404));
 
-}
-export const getAllVideosForCourses = async (req,res,next) =>{
-
-}
+        // Hide bunnyVideoId from public response if you want extra security, 
+        // but here we might need it for identifying which video to play.
+        // Let's keep it but remember the actual playback link comes from /sign endpoint.
+        
+        res.status(200).json({ success: true, courses});
+    } catch (error) {
+        next(error);
+    }
+};
