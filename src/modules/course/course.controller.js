@@ -15,7 +15,7 @@ export const createCourse = async (req, res, next) => {
         const { title, description, price } = req.body;
         
         // Instructor is the logged-in user
-        if(req.user.role != "Instructor" || req.user.role != "Admin" ){
+        if(req.user.role != "Instructor" && req.user.role != "Admin" ){
             return next(new CustomError("Not authorized to create course only Instructor can", 403));
         }
         // 1. إنشاء Folder (Collection) في باني باسم الكورس
@@ -24,10 +24,10 @@ export const createCourse = async (req, res, next) => {
         const instructorId = req.user._id;
 
         let uploadResult 
-
+        let customId
         if (req.file) {
             // Upload image to ImageKit
-        const customId = nanoid();
+         customId = nanoid();
 
              uploadResult = await imagekit.upload({
               file: req.file.buffer,
@@ -44,7 +44,8 @@ export const createCourse = async (req, res, next) => {
             image: {
                 secure_url: uploadResult.url, 
                 public_id: uploadResult.fileId,
-            },        
+            },   
+            customId     
     });
 
         res.status(201).json({ success: true, message: "Course created successfully", course });
@@ -126,10 +127,10 @@ export const updateCourse = async (req, res, next) => {
     try {
         const course = await courseModel.findById(req.params.id);
         if (!course) return next(new CustomError("Course not found", 404));
-
+        const admin = await userModel.findById(req.user._id) 
         if (
             course.instructorId.toString() !== req.user._id.toString() &&
-            req.user.role !== "Admin"
+            admin.role !== "Admin"
         ) {
             return next(new CustomError("Not authorized", 403));
         }
@@ -138,9 +139,9 @@ export const updateCourse = async (req, res, next) => {
         if (req.body.description) course.description = req.body.description;
         if (req.body.price) course.price = req.body.price;
         if (req.body.level) course.level = req.body.level;
-
+        console.log(course);
+        
         if (req.file) {
-            if (course.image?.public_id) {
                 await destroyImage(course.image.public_id);
             }
 
@@ -154,7 +155,6 @@ export const updateCourse = async (req, res, next) => {
                 secure_url: uploadResult.url,
                 public_id: uploadResult.fileId,
             };
-        }
 
         await course.save();
 

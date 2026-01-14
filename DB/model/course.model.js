@@ -33,6 +33,7 @@ const courseSchema = new Schema({
         secure_url: { type: String, required: true },
         public_id: { type: String, required: true }
     },
+    customId:String
 },{ timestamps: true });
 
 export const courseModel = model('Course', courseSchema);
