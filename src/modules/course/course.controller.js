@@ -3,8 +3,9 @@ import { videoModel } from '../../../DB/model/video.model.js';
 import { enrollmentModel } from '../../../DB/model/enrollment.model.js';
 import { CustomError } from '../../utilities/customError.js';
 import * as bunnyStream from '../../utilities/bunnyStream.js';
-import imagekit from '../../utilities/imagekitConfigration.js';
+import imagekit, { destroyImage } from '../../utilities/imagekitConfigration.js';
 import { customAlphabet } from 'nanoid'
+import { userModel } from '../../../DB/model/user.model.js';
 
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 5)
 
@@ -14,7 +15,7 @@ export const createCourse = async (req, res, next) => {
         const { title, description, price } = req.body;
         
         // Instructor is the logged-in user
-        if(req.user.role != "Instructor"){
+        if(req.user.role != "Instructor" || req.user.role != "Admin" ){
             return next(new CustomError("Not authorized to create course only Instructor can", 403));
         }
         // 1. إنشاء Folder (Collection) في باني باسم الكورس
@@ -125,13 +126,39 @@ export const updateCourse = async (req, res, next) => {
     try {
         const course = await courseModel.findById(req.params.id);
         if (!course) return next(new CustomError("Course not found", 404));
-        
-        if (course.instructorId.toString() !== req.user._id.toString()) {
+
+        if (
+            course.instructorId.toString() !== req.user._id.toString() &&
+            req.user.role !== "Admin"
+        ) {
             return next(new CustomError("Not authorized", 403));
         }
 
-        const updated = await courseModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.status(200).json({ success: true, course: updated });
+        if (req.body.title) course.title = req.body.title;
+        if (req.body.description) course.description = req.body.description;
+        if (req.body.price) course.price = req.body.price;
+        if (req.body.level) course.level = req.body.level;
+
+        if (req.file) {
+            if (course.image?.public_id) {
+                await destroyImage(course.image.public_id);
+            }
+
+            const uploadResult = await imagekit.upload({
+                file: req.file.buffer,
+                fileName: req.file.originalname,
+                folder: `${process.env.PROJECT_FOLDER}/Course/${course.customId}`,
+            });
+
+            course.image = {
+                secure_url: uploadResult.url,
+                public_id: uploadResult.fileId,
+            };
+        }
+
+        await course.save();
+
+        res.status(200).json({ success: true, course });
     } catch (error) {
         next(error);
     }

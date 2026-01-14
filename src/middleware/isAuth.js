@@ -4,7 +4,7 @@ import { CustomError } from '../utilities/customError.js'; // Make sure the path
 
 export const isAuth = async (req, res, next) => {
     try {
-        const { token } = req.headers;
+        const token = req.headers.token || req.headers.authorization?.split(" ")[1] || req.headers.Authorization?.split(" ")[1];
 
         // 1. Check if token exists
         if (!token) {

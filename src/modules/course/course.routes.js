@@ -105,7 +105,7 @@ router.get('/:id', isAuth, courseController.getCourse);
  *       403:
  *         description: Not authorized
  */
-router.put('/:id', isAuth, courseController.updateCourse);
+router.put('/:id', isAuth, multerCloudFunction(allowedExtensions.Image).single('image'), courseController.updateCourse);
 
 
 /**
