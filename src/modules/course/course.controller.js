@@ -14,11 +14,9 @@ export const createCourse = async (req, res, next) => {
     try {
         const { title, description, price } = req.body;
         
-        // Instructor is the logged-in user
         if(req.user.role != "Instructor" && req.user.role != "Admin" ){
             return next(new CustomError("Not authorized to create course only Instructor can", 403));
         }
-        // 1. إنشاء Folder (Collection) في باني باسم الكورس
         const bunnyCollection = await bunnyStream.createCollection(title);
 
         const instructorId = req.user._id;
@@ -26,7 +24,6 @@ export const createCourse = async (req, res, next) => {
         let uploadResult 
         let customId
         if (req.file) {
-            // Upload image to ImageKit
          customId = nanoid();
 
              uploadResult = await imagekit.upload({
@@ -40,7 +37,7 @@ export const createCourse = async (req, res, next) => {
             description,
             price,
             instructorId,
-            bunnyCollectionId: bunnyCollection.guid, // حفظ الـ Folder ID
+            bunnyCollectionId: bunnyCollection.guid,
             image: {
                 secure_url: uploadResult.url, 
                 public_id: uploadResult.fileId,

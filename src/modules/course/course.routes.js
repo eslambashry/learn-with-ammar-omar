@@ -214,7 +214,7 @@ router.get('/video/:videoId/sign', isAuth, courseController.getVideoUrl);
 
 /**
  * @swagger
- * /api/v1/courses/all/courses
+ * /api/v1/courses/all/courses:
  *   get:
  *     summary: Get All courses  
  *     tags: [Courses]
