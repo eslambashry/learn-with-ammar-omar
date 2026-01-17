@@ -141,7 +141,7 @@ export const deleteUsersService = async (ids) => {
 export const getAllUsersWithEnrollments = async () => {
 
     const users = await userModel
-        .find()
+        .find({role:"Student"})
         .select('-password -currentSessionToken -resetVerifyToken -forgetCode')
         .lean();
 

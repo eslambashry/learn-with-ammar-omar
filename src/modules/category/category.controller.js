@@ -12,7 +12,6 @@ export const createCategory = async (req, res, next) => {
 
     const category = await categoryModel.create({
       name,
-      slug: slugify(name, { lower: true }),
       createdBy: req.user._id
     });
 
@@ -66,7 +65,6 @@ export const updateCategory = async (req, res, next) => {
 
     if (req.body.name) {
       category.name = req.body.name;
-      category.slug = slugify(req.body.name, { lower: true });
     }
 
 

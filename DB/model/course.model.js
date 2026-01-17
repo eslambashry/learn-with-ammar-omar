@@ -17,12 +17,6 @@ const courseSchema = new Schema({
         required: true,
         trim: true
     },
-
-    slug: {
-        type: String,
-        required: true,
-        unique: true
-    },
     description: {
         type: String,
         trim: true

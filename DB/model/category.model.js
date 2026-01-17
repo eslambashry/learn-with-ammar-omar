@@ -6,11 +6,6 @@ const categorySchema = new Schema({
         required: true,
         unique: true
     },
-    slug: {
-        type: String,
-        required: true,
-        unique: true
-    },
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User',

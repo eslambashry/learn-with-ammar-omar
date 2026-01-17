@@ -39,12 +39,6 @@ export const createCourse = async (req, res, next) => {
             return next(new CustomError("Course title is required", 400));
         }
 
-        // 3️⃣ Create slug
-        const slug = title
-            .toLowerCase()
-            .replace(/[^\w ]+/g, '')
-            .replace(/ +/g, '-');
-
         // 4️⃣ Create Bunny Collection
         const bunnyCollection = await bunnyStream.createCollection(title);
 
@@ -248,10 +242,6 @@ export const updateCourse = async (req, res, next) => {
         // Update title + slug
         if (title) {
             course.title = title;
-            course.slug = title
-                .toLowerCase()
-                .replace(/[^\w ]+/g, '')
-                .replace(/ +/g, '-');
         }
 
         if (description) course.description = description;
