@@ -162,6 +162,50 @@ router.delete('/:id', isAuth, courseController.deleteCourse);
 router.post('/video/add', isAuth, courseController.addVideo);
 
 
+
+/**
+ * @swagger
+ * /api/v1/courses/for/users:
+ *   delete:
+ *     summary: get all courses without login
+ *     tags: [Courses without login]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Course and videos deleted
+ *       403:
+ *         description: Not authorized
+ */
+router.get('/for/users', courseController.showAllCourses);
+/**
+ * @swagger
+ * /api/v1/courses/for/users/{id}:
+ *   delete:
+ *     summary: get single course for user without login
+ *     tags: [Courses without login]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Course and videos deleted
+ *       403:
+ *         description: Not authorized
+ */
+router.get('/for/users/:id', courseController.showEachCourse);
+
 /**
  * @swagger
  * /api/v1/courses/video/{videoId}:

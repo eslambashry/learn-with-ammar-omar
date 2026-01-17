@@ -409,10 +409,74 @@ export const getAllCourses = async (req, res, next) => {
     }
 };
 
-export const showAllCourses = async(req,res,next) =>{
 
+export const getAllVideosUrl = async (req, res, next) => {
+    try {
+        const { videoId } = req.params;
+        
+        const video = await videoModel.findById(videoId);
+        if (!video) return next(new CustomError("Video not found", 404));
+
+        const course = await courseModel.findById(video.courseId);
+        
+        // Security Check: Is Instructor (Owner) OR Is Enrolled Student?
+        const isOwner = course.instructorId.toString() === req.user._id.toString();
+        
+        if (!isOwner) {
+            // Check Enrollment
+            const enrollment = await enrollmentModel.findOne({
+                userId: req.user._id,
+                courseId: video.courseId,
+                status: 'Active'
+            });
+
+            if (!enrollment && !video.isPreview) {
+                return next(new CustomError("You must be enrolled to watch this video", 403));
+            }
+        }
+        
+        // Generate Signed Token
+        const signedData = bunnyStream.generateSignedUrl(video.bunnyVideoId);
+
+        res.status(200).json({
+            success: true,
+            signedUrlParams: signedData
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+// Users without login
+export const showAllCourses = async(req,res,next) =>{
+ try {
+        const courses = await courseModel.find().populate('instructorId','userName image')
+        if (!courses) return next(new CustomError("Course not found", 404));
+
+        // Hide bunnyVideoId from public response if you want extra security, 
+        // but here we might need it for identifying which video to play.
+        // Let's keep it but remember the actual playback link comes from /sign endpoint.
+        
+        res.status(200).json({ success: true, courses});
+    } catch (error) {
+        next(error);
+    }
 }
 
 export const showEachCourse = async(req,res,next)=>{
+ try {
+        const course = await courseModel.findById(req.params.id).populate('instructorId', 'userName');
+        if (!course) return next(new CustomError("Course not found", 404));
 
+        const videos = await videoModel.find({ courseId: course._id }).sort({ order: 1 });
+
+        // Hide bunnyVideoId from public response if you want extra security, 
+        // but here we might need it for identifying which video to play.
+        // Let's keep it but remember the actual playback link comes from /sign endpoint.
+        
+        res.status(200).json({ success: true, course, videos });
+    } catch (error) {
+        next(error);
+    }
 }
