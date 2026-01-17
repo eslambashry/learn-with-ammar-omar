@@ -6,8 +6,7 @@ import { userModel } from '../../../DB/model/user.model.js';
 // Enroll User to Course
 export const enrollUser = async (req, res, next) => {
   try {
-    const { courseId } = req.body;
-    const userId = req.user._id;
+    const { courseId, userId } = req.body;
 
     // Check course
     const course = await courseModel.findById(courseId);

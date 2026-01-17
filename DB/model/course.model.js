@@ -2,7 +2,7 @@ import { Schema, model, Types } from 'mongoose';
 
 const lessonSchema = new Schema({
     title: { type: String, required: true },
-    duration: { type: Number, required: true }, // بالدقائق
+    duration: { type: Number, required: true }, 
     videoId: { type: Types.ObjectId, ref: 'Video' }
 });
 
