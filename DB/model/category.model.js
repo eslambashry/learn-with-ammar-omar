@@ -1,20 +1,15 @@
-import { Schema, model } from 'mongoose';
+import { model, Schema } from "mongoose";
 
 const categorySchema = new Schema({
     name: {
         type: String,
         required: true,
-        unique: true,
-        trim: true
+        unique: true
     },
     slug: {
         type: String,
         required: true,
-        lowercase: true
-    },
-    image: {
-        type: Object,
-        default: {} // { secure_url, public_id } from Cloudinary
+        unique: true
     },
     createdBy: {
         type: Schema.Types.ObjectId,
@@ -23,4 +18,5 @@ const categorySchema = new Schema({
     }
 }, { timestamps: true });
 
-export const categoryModel = model('Category', categorySchema);
+
+export const categoryModel = model('Category', categorySchema)

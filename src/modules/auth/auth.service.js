@@ -91,6 +91,7 @@ export const getOneUserService = async (id) => userModel.findById(id);
 export const createNewUser = async (data) => registerUser(data); // Re-use register
 import crypto from 'crypto';
 import imagekit, { destroyImage } from '../../utilities/imagekitConfigration.js';
+import { enrollmentModel } from '../../../DB/model/enrollment.model.js';
 
 // Update User
 export const updateUserService = async ({ id, ...updateData }) => {
@@ -136,6 +137,77 @@ export const deleteUsersService = async (ids) => {
     const result = await userModel.deleteMany({ _id: { $in: ids } });
     return result;
 };
+
+export const getAllUsersWithEnrollments = async () => {
+
+    const users = await userModel
+        .find()
+        .select('-password -currentSessionToken -resetVerifyToken -forgetCode')
+        .lean();
+
+    const userIds = users.map(user => user._id);
+
+    const enrollments = await enrollmentModel
+        .find({ userId: { $in: userIds } })
+        .populate('courseId', 'title image price instructorId')
+        .lean();
+
+    const enrollmentMap = {};
+    enrollments.forEach(enroll => {
+        const uid = enroll.userId.toString();
+        if (!enrollmentMap[uid]) enrollmentMap[uid] = [];
+        enrollmentMap[uid].push(enroll);
+    });
+
+    const result = users.map(user => ({
+        ...user,
+        enrollments: enrollmentMap[user._id.toString()] || []
+    }));
+
+    // ✅ أهم سطر
+    return result;
+};
+
+export const getAdminStats = async (req, res, next) => {
+  try {
+
+    const totalStudents = await userModel.countDocuments({
+      role: 'Student'
+    });
+
+    const totalEnrollments = await enrollmentModel.countDocuments();
+
+    const activeStudentsAgg = await enrollmentModel.aggregate([
+    {
+        $match: { status: 'Active' }
+    },
+    {
+        $group: {
+        _id: '$userId'
+        }
+    },
+    {
+        $count: 'activeStudents'
+    }
+    ]);
+
+    const activeStudents =
+      activeStudentsAgg.length > 0
+        ? activeStudentsAgg[0].activeStudents
+        : 0;
+
+  return {
+    totalStudents,
+    totalEnrollments,
+    activeStudents
+  };
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 export const logoutService = async (token) => {
     await userModel.findOneAndUpdate({ currentSessionToken: token }, { currentSessionToken: null });

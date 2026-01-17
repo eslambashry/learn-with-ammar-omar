@@ -44,3 +44,36 @@ export const isAuth = async (req, res, next) => {
         return next(new CustomError(error.message || "Authentication failed.", 500));
     }
 };
+
+export const isAdmin = async (req, res, next) => {
+try{
+    const token = req.headers.token || req.headers.authorization?.split(" ")[1] || req.headers.Authorization?.split(" ")[1];
+
+        // 1. Check if token exists
+        if (!token) {
+            return next(new CustomError("Authentication required. Please log in.", 401));
+        }
+        
+        // 2. Verify the token
+        const decoded = verifyToken(token);
+        
+        if (!decoded?._id) {
+            return next(new CustomError("Invalid or expired token.", 401));
+        }
+
+        // 3. Find user in Database
+        const user = await userModel.findById(decoded._id);
+        if (!user) {
+            return next(new CustomError("User not found.", 404));
+        }
+
+  if (req.user.role !== 'Admin') {
+    return next(new CustomError('Access denied. Admins only.', 403));
+  }
+
+  next();
+      } catch (error) {
+        // Catch any unexpected errors (like JWT malformed)
+        return next(new CustomError(error.message || "Authentication failed.", 500));
+    }
+};

@@ -8,6 +8,7 @@ import { DB } from "./DB/DB_connection.js";
 import authRouter from './src/modules/auth/auth.routes.js';
 import courseRouter from './src/modules/course/course.routes.js';
 import enrollmentRouter from './src/modules/enrollment/enrollment.routes.js';
+import categortRouter from './src/modules/category/category.routes.js'
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
@@ -50,7 +51,7 @@ export const swaggerOptions = {
     "./src/modules/auth/auth.routes.js",   // controllers & routes
     "./src/modules/course/course.routes.js",   // controllers & routes
     "./src/modules/enrollment/enrollment.routes.js",   // controllers & routes
-    // "./src/modules/video/video.routes.js",   // controllers & routes
+    "./src/modules/category/category.routes.js",   // controllers & routes
     // "./src/modules/user/user.routes.js",   // controllers & routes
     // "./src/modules/lesson/lesson.routes.js",   // controllers & routes
   ],
@@ -75,6 +76,7 @@ swaggerSetup(app);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/courses', courseRouter);
 app.use('/api/v1/enroll', enrollmentRouter);
+app.use('/api/v1/categories', categortRouter);
 
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;

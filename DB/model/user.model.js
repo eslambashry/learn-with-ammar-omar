@@ -21,7 +21,6 @@ const userSchema = new Schema({
         enum: ['Student', 'Instructor', 'Admin'],
         default: 'Student'
     },
-    // ده الحقل السحري اللي هيمنع تعدد الأجهزة
     currentSessionToken: {
         type: String,
         default: null
@@ -33,6 +32,10 @@ const userSchema = new Schema({
     isBlocked: {
         type: Boolean,
         default: false
+    },
+    coursenumbers:{
+        type:Boolean,
+        default:0
     },
     forgetCode:{
         type:String

@@ -1,6 +1,7 @@
 import { enrollmentModel } from '../../../DB/model/enrollment.model.js';
 import { courseModel } from '../../../DB/model/course.model.js';
 import { CustomError } from '../../utilities/customError.js';
+import { userModel } from '../../../DB/model/user.model.js';
 
 // Enroll User to Course
 export const enrollUser = async (req, res, next) => {
@@ -8,10 +9,14 @@ export const enrollUser = async (req, res, next) => {
         const { courseId } = req.body;
         const userId = req.user._id;
 
+        const user = await userModel.findById(userId)
+
+        user.coursenumbers += 1;
         // Check if course exists
         const course = await courseModel.findById(courseId);
         if (!course) return next(new CustomError("Course not found", 404));
-
+      course.studentsCount +=1;
+      
         // Check if already enrolled
         const existing = await enrollmentModel.findOne({ userId, courseId });
         if (existing) return next(new CustomError("User already enrolled", 409));
@@ -41,3 +46,4 @@ export const getUserEnrollments = async (req, res, next) => {
         next(error);
     }
 };
+

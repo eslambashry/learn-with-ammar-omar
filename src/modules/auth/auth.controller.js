@@ -174,3 +174,34 @@ export const changePassword = async (req, res, next) => {
     next(error);
   }
 }
+
+
+
+// ! ADMIN
+
+export const getStatisticsUsers = async(req,res,next) =>{
+    try {
+    const users = await authService.getAdminStats();
+    res.status(200).json({
+      success: true,
+      message: 'done',
+      users
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const getAllUserswithEnrollment = async (req, res, next) => {
+  try {
+    const users = await authService.getAllUsersWithEnrollments();
+    res.status(200).json({
+      success: true,
+      message: 'done',
+      length: users.length,
+      users
+    });
+  } catch (error) {
+    next(error);
+  }
+}

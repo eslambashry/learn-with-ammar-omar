@@ -1,3 +1,4 @@
+import { isAdmin, isAuth } from '../../middleware/isAuth.js';
 import { multerCloudFunction } from '../../services/multerCloud.js';
 import { allowedExtensions } from '../../utilities/allowedExtensions.js';
 import * as userCon from './auth.controller.js';
@@ -312,6 +313,34 @@ userRouter.post('/change_password', userCon.changePassword);
  *         description: Users deleted successfully
  */
 userRouter.post('/multy', userCon.multyDeleteUsers);
+
+
+/**
+ * @swagger
+ * /api/v1/admin/users:
+ *   get:
+ *     summary: Get all user with enrollments
+ *     tags: [Admins]
+ *     responses:
+ *       200:
+ *         description: display all users with enrollments
+ */
+userRouter.get('/admin/users',isAuth,isAdmin ,userCon.getAllUserswithEnrollment);
+
+
+
+/**
+ * @swagger
+ * /api/v1/admin/users/statistics:
+ *   get:
+ *     summary: Get users statistics
+ *     tags: [Admins]
+ *     responses:
+ *       200:
+ *         description: display users statisitcs
+ */
+userRouter.get('/admin/users/statistics',isAuth,isAdmin,userCon.getStatisticsUsers);
+
 
 export default userRouter;
 

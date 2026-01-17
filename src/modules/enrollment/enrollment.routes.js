@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as enrollmentController from './enrollment.controller.js';
-import { isAuth } from '../../middleware/isAuth.js';
+import { isAdmin, isAuth } from '../../middleware/isAuth.js';
 
 const router = Router();
 
@@ -59,5 +59,6 @@ router.post('/', isAuth, enrollmentController.enrollUser);
  *         description: Unauthorized
  */
 router.get('/my-courses', isAuth, enrollmentController.getUserEnrollments);
+
 
 export default router;

@@ -6,31 +6,51 @@ const videoSchema = new Schema({
         required: true,
         trim: true
     },
+
     courseId: {
         type: Types.ObjectId,
         ref: 'Course',
-        required: true
-    },
-    bunnyVideoId: { 
-        type: String,
         required: true,
-        trim: true,
-        description: "The unique Video ID from Bunny.net"
+        index: true
     },
-    order: {
-        type: Number,
-        required: true,
-        default: 1
+
+    chapterId: {
+        type: Types.ObjectId,
+        required: true // reference logical chapter (مش collection)
     },
-    isPreview: {
-        type: Boolean,
-        default: false,
-        description: "If true, this video can be watched without enrollment"
+
+    bunny: {
+        videoId: {
+            type: String,
+            required: true
+        },
+        libraryId: {
+            type: String,
+            required: true
+        }
     },
+
     duration: {
         type: Number,
-        default: 0
+        default: 0 // seconds
+    },
+
+    order: {
+        type: Number,
+        default: 1
+    },
+
+    isPreview: {
+        type: Boolean,
+        default: false
+    },
+
+    status: {
+        type: String,
+        enum: ['processing', 'ready', 'failed'],
+        default: 'processing'
     }
+
 }, { timestamps: true });
 
 export const videoModel = model('Video', videoSchema);

@@ -6,99 +6,200 @@ import * as bunnyStream from '../../utilities/bunnyStream.js';
 import imagekit, { destroyImage } from '../../utilities/imagekitConfigration.js';
 import { customAlphabet } from 'nanoid'
 import { userModel } from '../../../DB/model/user.model.js';
+import { Types } from 'mongoose';
 
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 5)
 
 // Create a new Course
 export const createCourse = async (req, res, next) => {
     try {
-        const { title, description, price } = req.body;
-        
-        if(req.user.role != "Instructor" && req.user.role != "Admin" ){
-            return next(new CustomError("Not authorized to create course only Instructor can", 403));
+        // 1️⃣ Authorization
+        if (!['Instructor', 'Admin'].includes(req.user.role)) {
+            return next(
+                new CustomError(
+                    "Not authorized to create course. Only instructors or admins allowed.",
+                    403
+                )
+            );
         }
-        const bunnyCollection = await bunnyStream.createCollection(title);
 
-        const instructorId = req.user._id;
-
-        let uploadResult 
-        let customId
-        if (req.file) {
-         customId = nanoid();
-
-             uploadResult = await imagekit.upload({
-              file: req.file.buffer,
-              fileName: req.file.originalname,
-              folder: `${process.env.PROJECT_FOLDER}/Course/${customId}`,
-            });
-          }
-        const course = await courseModel.create({
+        // 2️⃣ Extract body
+        const {
             title,
             description,
-            price,
-            instructorId,
-            bunnyCollectionId: bunnyCollection.guid,
-            image: {
-                secure_url: uploadResult.url, 
-                public_id: uploadResult.fileId,
-            },   
-            customId     
-    });
+            // categoryId,
+            priceAmount,
+            currency,
+            totalDuration,
+            whatYouWillLearn,
+            requirements,
+            features
+        } = req.body;
 
-        res.status(201).json({ success: true, message: "Course created successfully", course });
+        if (!title) {
+            return next(new CustomError("Course title is required", 400));
+        }
+
+        // 3️⃣ Create slug
+        const slug = title
+            .toLowerCase()
+            .replace(/[^\w ]+/g, '')
+            .replace(/ +/g, '-');
+
+        // 4️⃣ Create Bunny Collection
+        const bunnyCollection = await bunnyStream.createCollection(title);
+
+        // 5️⃣ Upload Image
+        let imageData = {};
+        let customId;
+
+        if (req.file) {
+            customId = nanoid();
+
+            const uploadResult = await imagekit.upload({
+                file: req.file.buffer,
+                fileName: req.file.originalname,
+                folder: `${process.env.PROJECT_FOLDER}/courses/${customId}`,
+            });
+
+            imageData = {
+                secure_url: uploadResult.url,
+                public_id: uploadResult.fileId
+            };
+        } else {
+            return next(new CustomError("Course image is required", 400));
+        }
+
+        // 6️⃣ Create Course
+        const course = await courseModel.create({
+            title,
+            slug,
+            description,
+            instructorId: req.user._id,
+            // categoryId,
+
+            price: {
+                amount: priceAmount || 0,
+                currency: currency || 'SAR'
+            },
+
+            totalDuration: totalDuration || 0,
+
+            whatYouWillLearn: whatYouWillLearn
+                ? JSON.parse(whatYouWillLearn)
+                : [],
+
+            requirements: requirements
+                ? JSON.parse(requirements)
+                : [],
+
+            features: features
+                ? JSON.parse(features)
+                : {},
+
+            bunnyCollectionId: bunnyCollection.guid,
+
+            image: imageData,
+
+            customId,
+            isPublished: false
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Course created successfully",
+            course
+        });
     } catch (error) {
         next(error);
     }
 };
+
+
 
 // Add Video to Course (Step 1: Create Video Entry in Bunny & DB)
 export const addVideo = async (req, res, next) => {
     try {
-        const { courseId, title ,chapterTitle} = req.body;
+        const {
+            courseId,
+            title,
+            chapterTitle,
+            isPreview = false
+        } = req.body;
 
-        // Verify Course Exists & Ownership
+        // 1️⃣ Validate Course
         const course = await courseModel.findById(courseId);
-        if (!course) return next(new CustomError("Course not found", 404));
-        if (course.instructorId.toString() !== req.user._id.toString()) {
-            return next(new CustomError("Not authorized to add videos to this course", 403));
+        if (!course) {
+            return next(new CustomError("Course not found", 404));
         }
-        
-        // 1. Create Video Placeholder in Bunny.net
-        const bunnyVideo = await bunnyStream.createVideoEntry(title,course.bunnyCollectionId);
-        
-        // 2. Save Metadata to DB
-        const count = await videoModel.countDocuments({ courseId });
+
+        // Authorization
+        if (
+            course.instructorId.toString() !== req.user._id.toString() &&
+            req.user.role !== "Admin"
+        ) {
+            return next(
+                new CustomError("Not authorized to add videos to this course", 403)
+            );
+        }
+
+        if (!title) {
+            return next(new CustomError("Video title is required", 400));
+        }
+
+        // 2️⃣ Find or Create Chapter
+        let chapter = course.chapters.find(
+            ch => ch.title === (chapterTitle || "General")
+        );
+
+        if (!chapter) {
+            chapter = {
+                _id: new Types.ObjectId(),
+                title: chapterTitle || "General",
+                videos: []
+            };
+            course.chapters.push(chapter);
+        }
+
+        // 3️⃣ Create Bunny Video Entry
+        const bunnyVideo = await bunnyStream.createVideoEntry(
+            title,
+            course.bunnyCollectionId
+        );
+
+        // 4️⃣ Order inside chapter
+        const order = chapter.videos.length + 1;
+
+        // 5️⃣ Create Video Record
         const video = await videoModel.create({
             title,
             courseId,
-            bunnyVideoId: bunnyVideo.guid,
-            order: count + 1
+            chapterId: chapter._id,
+            order,
+            isPreview,
+            status: 'processing',
+            bunny: {
+                videoId: bunnyVideo.guid,
+                libraryId: process.env.BUNNY_LIBRARY_ID
+            }
         });
-        
-        // Find if chapter already exists
-        const chapterIndex = course.chapters.findIndex(ch => ch.title === chapterTitle);
-        
-        if (chapterIndex !== -1) {
-            // Add to existing chapter
-            course.chapters[chapterIndex].videos.push(video._id);
-        } else {
-            // Create new chapter and add video
-            course.chapters.push({
-                title: chapterTitle || "General", // Default to General if no title provided
-                videos: [video._id]
-            });
-        }
 
-        res.status(201).json({ 
-            success: true, 
-            message: "Video slot created. Ready for upload.", 
+        // 6️⃣ Push video into chapter
+        chapter.videos.push(video._id);
+        await course.save();
+
+        res.status(201).json({
+            success: true,
+            message: "Video slot created. Ready for upload.",
             video,
-            bunnyUploadDetails: bunnyVideo // Contains presigned upload info from Bunny
+            bunnyUploadDetails: bunnyVideo
         });
+
     } catch (error) {
         next(error);
     }
 };
+
 
 // Get One Course (Public + Videos list without secure links)
 export const getCourse = async (req, res, next) => {
@@ -123,43 +224,101 @@ export const getCourse = async (req, res, next) => {
 export const updateCourse = async (req, res, next) => {
     try {
         const course = await courseModel.findById(req.params.id);
-        if (!course) return next(new CustomError("Course not found", 404));
-        const admin = await userModel.findById(req.user._id) 
-        if (
-            course.instructorId.toString() !== req.user._id.toString() &&
-            admin.role !== "Admin"
-        ) {
-            return next(new CustomError("Not authorized", 403));
+        if (!course) {
+            return next(new CustomError("Course not found", 404));
         }
 
-        if (req.body.title) course.title = req.body.title;
-        if (req.body.description) course.description = req.body.description;
-        if (req.body.price) course.price = req.body.price;
-        if (req.body.level) course.level = req.body.level;
-        console.log(course);
-        
+        // Authorization
+        if (
+            course.instructorId.toString() !== req.user._id.toString() &&
+            req.user.role !== "Admin"
+        ) {
+            return next(new CustomError("Not authorized to update this course", 403));
+        }
+
+        const {
+            title,
+            description,
+            priceAmount,
+            currency,
+            totalDuration,
+            whatYouWillLearn,
+            requirements,
+            features,
+            isPublished
+        } = req.body;
+
+        // Update title + slug
+        if (title) {
+            course.title = title;
+            course.slug = title
+                .toLowerCase()
+                .replace(/[^\w ]+/g, '')
+                .replace(/ +/g, '-');
+        }
+
+        if (description) course.description = description;
+
+        // Update price object
+        if (priceAmount !== undefined) {
+            course.price.amount = priceAmount;
+        }
+        if (currency) {
+            course.price.currency = currency;
+        }
+
+        if (totalDuration !== undefined) {
+            course.totalDuration = totalDuration;
+        }
+
+        // Arrays (form-data safe)
+        if (whatYouWillLearn) {
+            course.whatYouWillLearn = JSON.parse(whatYouWillLearn);
+        }
+
+        if (requirements) {
+            course.requirements = JSON.parse(requirements);
+        }
+
+        if (features) {
+            course.features = JSON.parse(features);
+        }
+
+        if (typeof isPublished !== 'undefined') {
+            course.isPublished = isPublished;
+        }
+
+        // Image update
         if (req.file) {
+            if (course.image?.public_id) {
                 await destroyImage(course.image.public_id);
             }
 
             const uploadResult = await imagekit.upload({
                 file: req.file.buffer,
                 fileName: req.file.originalname,
-                folder: `${process.env.PROJECT_FOLDER}/Course/${course.customId}`,
+                folder: `${process.env.PROJECT_FOLDER}/courses/${course.customId}`,
             });
 
             course.image = {
                 secure_url: uploadResult.url,
-                public_id: uploadResult.fileId,
+                public_id: uploadResult.fileId
             };
+        }
 
         await course.save();
 
-        res.status(200).json({ success: true, course });
+        res.status(200).json({
+            success: true,
+            message: "Course updated successfully",
+            course
+        });
+
     } catch (error) {
         next(error);
     }
 };
+
 
 // Delete Course
 export const deleteCourse = async (req, res, next) => {
@@ -267,3 +426,6 @@ export const getAllCourses = async (req, res, next) => {
         next(error);
     }
 };
+
+
+
