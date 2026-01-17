@@ -33,8 +33,8 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
-    coursenumbers:{
-        type:Boolean,
+    coursesCount:{
+        type:Number,
         default:0
     },
     forgetCode:{

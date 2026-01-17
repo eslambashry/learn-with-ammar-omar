@@ -5,7 +5,6 @@ import { CustomError } from '../../utilities/customError.js';
 import * as bunnyStream from '../../utilities/bunnyStream.js';
 import imagekit, { destroyImage } from '../../utilities/imagekitConfigration.js';
 import { customAlphabet } from 'nanoid'
-import { userModel } from '../../../DB/model/user.model.js';
 import { Types } from 'mongoose';
 
 const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvwxyz', 5)
@@ -27,7 +26,7 @@ export const createCourse = async (req, res, next) => {
         const {
             title,
             description,
-            // categoryId,
+            categoryId,
             priceAmount,
             currency,
             totalDuration,
@@ -115,8 +114,6 @@ export const createCourse = async (req, res, next) => {
     }
 };
 
-
-
 // Add Video to Course (Step 1: Create Video Entry in Bunny & DB)
 export const addVideo = async (req, res, next) => {
     try {
@@ -200,7 +197,6 @@ export const addVideo = async (req, res, next) => {
     }
 };
 
-
 // Get One Course (Public + Videos list without secure links)
 export const getCourse = async (req, res, next) => {
     try {
@@ -218,7 +214,6 @@ export const getCourse = async (req, res, next) => {
         next(error);
     }
 };
-
 
 // Update Course
 export const updateCourse = async (req, res, next) => {
@@ -319,7 +314,6 @@ export const updateCourse = async (req, res, next) => {
     }
 };
 
-
 // Delete Course
 export const deleteCourse = async (req, res, next) => {
     try {
@@ -411,7 +405,6 @@ export const getVideoUrl = async (req, res, next) => {
     }
 };
 
-
 export const getAllCourses = async (req, res, next) => {
     try {
         const courses = await courseModel.find().populate('instructorId','userName image')
@@ -426,6 +419,3 @@ export const getAllCourses = async (req, res, next) => {
         next(error);
     }
 };
-
-
-

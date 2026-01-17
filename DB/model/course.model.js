@@ -23,18 +23,18 @@ const courseSchema = new Schema({
         required: true,
         unique: true
     },
-
     description: {
         type: String,
         trim: true
     },
-
     instructorId: {
         type: Types.ObjectId,
         ref: 'User',
         required: true
     },
-
+    course_level:{
+        type:String
+    },
     categoryId: {
         type: Types.ObjectId,
         ref: 'Category'
