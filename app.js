@@ -136,3 +136,7 @@ export default function handler(req, res) {
 }
 app.get('/', (req, res) => res.send('Welcome to LMS API 📚'));
 app.listen(port, () => console.log(`App Running On Port ${port}`.green.bold + " 🚀"));
+
+
+// TODO make api that users send there name and image of the bill and the course name 
+// TODO get that bill

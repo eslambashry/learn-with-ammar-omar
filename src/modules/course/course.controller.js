@@ -196,7 +196,10 @@ export const addVideo = async (req, res, next) => {
 // Get One Course (Public + Videos list without secure links)
 export const getCourse = async (req, res, next) => {
     try {
-        const course = await courseModel.findById(req.params.id).populate('instructorId', 'userName');
+        const course = await courseModel.findById(req.params.id)
+        .populate('instructorId', 'userName')
+        .populate('categoryId', 'name'); 
+        
         if (!course) return next(new CustomError("Course not found", 404));
 
         const videos = await videoModel.find({ courseId: course._id }).sort({ order: 1 });
@@ -396,7 +399,10 @@ export const getVideoUrl = async (req, res, next) => {
 
 export const getAllCourses = async (req, res, next) => {
     try {
-        const courses = await courseModel.find().populate('instructorId','userName image')
+        const courses = await courseModel.find()
+        .populate('instructorId','userName image')
+        .populate('categoryId', 'name'); 
+        
         if (!courses) return next(new CustomError("Course not found", 404));
 
         // Hide bunnyVideoId from public response if you want extra security, 
@@ -451,7 +457,10 @@ export const getAllVideosUrl = async (req, res, next) => {
 // Users without login
 export const showAllCourses = async(req,res,next) =>{
  try {
-        const courses = await courseModel.find().populate('instructorId','userName image')
+        const courses = await courseModel.find()
+        .populate('instructorId','userName image')
+        .populate('categoryId', 'name'); 
+
         if (!courses) return next(new CustomError("Course not found", 404));
 
         // Hide bunnyVideoId from public response if you want extra security, 
@@ -466,7 +475,10 @@ export const showAllCourses = async(req,res,next) =>{
 
 export const showEachCourse = async(req,res,next)=>{
  try {
-        const course = await courseModel.findById(req.params.id).populate('instructorId', 'userName');
+        const course = await courseModel.findById(req.params.id)
+        .populate('instructorId', 'userName')
+        .populate('categoryId', 'name'); 
+        
         if (!course) return next(new CustomError("Course not found", 404));
 
         const videos = await videoModel.find({ courseId: course._id }).sort({ order: 1 });
