@@ -166,7 +166,7 @@ router.post('/video/add', isAuth, courseController.addVideo);
 /**
  * @swagger
  * /api/v1/courses/for/users:
- *   delete:
+ *   get:
  *     summary: get all courses without login
  *     tags: [Courses without login]
  *     security:
@@ -187,7 +187,7 @@ router.get('/for/users', courseController.showAllCourses);
 /**
  * @swagger
  * /api/v1/courses/for/users/{id}:
- *   delete:
+ *   get:
  *     summary: get single course for user without login
  *     tags: [Courses without login]
  *     security:

@@ -289,31 +289,6 @@ userRouter.post('/reset/:token', userCon.resetPassword);
 userRouter.post('/change_password', userCon.changePassword);
 
 
-/**
- * @swagger
- * /api/v1/auth/multy:
- *   post:
- *     summary: Delete multiple users
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - ids
- *             properties:
- *               ids:
- *                 type: array
- *                 items:
- *                   type: string
- *     responses:
- *       200:
- *         description: Users deleted successfully
- */
-userRouter.post('/multy', userCon.multyDeleteUsers);
-
 
 /**
  * @swagger
@@ -341,6 +316,32 @@ userRouter.get('/admin/users',isAuth,isAdmin ,userCon.getAllUserswithEnrollment)
  */
 userRouter.get('/admin/users/statistics',isAuth,isAdmin,userCon.getStatisticsUsers);
 
+
+
+/**
+ * @swagger
+ * /api/v1/auth/multy:
+ *   post:
+ *     summary: Delete multiple users
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ids
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Users deleted successfully
+ */
+userRouter.post('/multy', userCon.multyDeleteUsers);
 
 export default userRouter;
 

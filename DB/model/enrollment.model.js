@@ -17,8 +17,12 @@ const enrollmentSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Active', 'Completed', 'Refunded', 'Expired'],
-        default: 'Active'
+        enum: ['Pending', 'Active', 'Rejected', 'Completed', 'Refunded', 'Expired'],
+        default: 'Pending'
+    },
+    billImage: {
+      url: { type: String },
+      fileId: { type: String }
     }
 }, { timestamps: true });
 
