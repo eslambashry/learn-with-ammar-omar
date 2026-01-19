@@ -336,26 +336,48 @@ export const deleteCourse = async (req, res, next) => {
 
 // Delete Video
 export const deleteVideo = async (req, res, next) => {
-    try {
-        const video = await videoModel.findById(req.params.videoId);
-        if (!video) return next(new CustomError("Video not found", 404));
+  try {
+    const { videoId } = req.params;
 
-        // const course = await courseModel.findById(video.courseId);
-        // if (course.instructorId.toString() !== req.user._id.toString()) {
-        //     return next(new CustomError("Not authorized", 403));
-        // }
-
-        // Delete from Bunny
-        await bunnyStream.deleteVideoEntry(video.bunnyVideoId);
-        
-        // Delete from DB
-        await videoModel.findByIdAndDelete(req.params.videoId);
-
-        res.status(200).json({ success: true, message: "Video deleted" });
-    } catch (error) {
-        next(error);
+    // 1️⃣ Find video
+    const video = await videoModel.findById(videoId);
+    if (!video) {
+      return next(new CustomError("Video not found", 404));
     }
+
+    // 2️⃣ Delete from Bunny
+    await bunnyStream.deleteVideoEntry(video.bunny.videoId);
+
+    // 3️⃣ Remove lesson from course chapters
+    await courseModel.updateOne(
+      { _id: video.courseId },
+      {
+        $pull: {
+          "chapters.$[chapter].lessons": {
+            videoId: video._id
+          }
+        }
+      },
+      {
+        arrayFilters: [
+          { "chapter._id": video.chapterId }
+        ]
+      }
+    );
+
+    // 4️⃣ Delete video from DB
+    await videoModel.findByIdAndDelete(videoId);
+
+    res.status(200).json({
+      success: true,
+      message: "Video deleted and removed from course chapters"
+    });
+
+  } catch (error) {
+    next(error);
+  }
 };
+
 
 // Get Signed URL for a Video (Secure Playback)
 export const getVideoUrl = async (req, res, next) => {
