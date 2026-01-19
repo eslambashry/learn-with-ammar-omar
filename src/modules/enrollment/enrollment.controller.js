@@ -69,7 +69,7 @@ export const enrollUser = async (req, res, next) => {
 export const getUserEnrollments = async (req, res, next) => {
     try {
         const enrollments = await enrollmentModel.find({ userId: req.user._id })
-            .populate('courseId', 'title description thumbnail price');
+            .populate('courseId', 'title description thumbnail price image');
         
         res.status(200).json({ success: true, count: enrollments.length, enrollments });
     } catch (error) {
