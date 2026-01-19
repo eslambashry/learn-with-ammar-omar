@@ -148,3 +148,43 @@ export const rejectEnrollment = async (req, res, next) => {
     next(error);
   }
 };
+
+
+export const AdminEnrollmentUser = async (req, res, next) => {
+  try {
+    const { courseId, userId } = req.body;
+
+    // Validate input
+    if (!courseId || !userId) {
+      return next(new CustomError("courseId and userId are required", 400));
+    }
+
+    // Check course existence
+    const course = await courseModel.findById(courseId);
+    if (!course) {
+      return next(new CustomError("Course not found", 404));
+    }
+
+    // Prevent duplicate enrollment
+    const existingEnrollment = await enrollmentModel.findOne({ userId, courseId });
+    if (existingEnrollment) {
+      return next(new CustomError("User already enrolled in this course", 409));
+    }
+
+    // Create ACTIVE enrollment directly
+    const enrollment = await enrollmentModel.create({
+      userId,
+      courseId,
+      status: 'Active'
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User enrolled successfully",
+      enrollment
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};

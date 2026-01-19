@@ -134,4 +134,7 @@ router.patch('/:id/reject', isAuth, isAdmin, enrollmentController.rejectEnrollme
 router.get('/my-courses', isAuth, enrollmentController.getUserEnrollments);
 
 
+router.post('/admin/enroll/user', isAuth,isAdmin, enrollmentController.AdminEnrollmentUser);
+
+
 export default router;
