@@ -66,7 +66,6 @@ export const createCourse = async (req, res, next) => {
         // 6️⃣ Create Course
         const course = await courseModel.create({
             title,
-            slug,
             description,
             instructorId: req.user._id,
             // categoryId,
@@ -242,7 +241,6 @@ export const updateCourse = async (req, res, next) => {
             isPublished
         } = req.body;
 
-        // Update title + slug
         if (title) {
             course.title = title;
         }
@@ -368,12 +366,14 @@ export const getVideoUrl = async (req, res, next) => {
         if (!video) return next(new CustomError("Video not found", 404));
 
         const course = await courseModel.findById(video.courseId);
-        
-        // Security Check: Is Instructor (Owner) OR Is Enrolled Student?
+
+        // Roles check
+        const isAdmin = req.user.role === 'Admin';
         const isOwner = course.instructorId.toString() === req.user._id.toString();
-        
-        if (!isOwner) {
-            // Check Enrollment
+
+        // Admin OR Instructor can always watch
+        if (!isAdmin && !isOwner) {
+            // Check Enrollment for students
             const enrollment = await enrollmentModel.findOne({
                 userId: req.user._id,
                 courseId: video.courseId,
@@ -381,7 +381,9 @@ export const getVideoUrl = async (req, res, next) => {
             });
 
             if (!enrollment && !video.isPreview) {
-                return next(new CustomError("You must be enrolled to watch this video", 403));
+                return next(
+                    new CustomError("يجب أن تكون مسجّلًا في الدورة لمشاهدة هذا الفيديو.", 403)
+                );
             }
         }
         
@@ -396,6 +398,7 @@ export const getVideoUrl = async (req, res, next) => {
         next(error);
     }
 };
+
 
 export const getAllCourses = async (req, res, next) => {
     try {
@@ -452,7 +455,6 @@ export const getAllVideosUrl = async (req, res, next) => {
         next(error);
     }
 };
-
 
 // Users without login
 export const showAllCourses = async(req,res,next) =>{

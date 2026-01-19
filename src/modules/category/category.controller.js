@@ -1,4 +1,3 @@
-import slugify from 'slugify';
 import { categoryModel } from '../../../DB/model/category.model.js';
 import { CustomError } from '../../utilities/customError.js';
 
