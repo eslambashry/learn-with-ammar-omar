@@ -10,7 +10,6 @@ import courseRouter from './src/modules/course/course.routes.js';
 import enrollmentRouter from './src/modules/enrollment/enrollment.routes.js';
 import categortRouter from './src/modules/category/category.routes.js'
 import swaggerJsdoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
 
 export const swaggerOptions = {
   definition: {
@@ -59,10 +58,6 @@ export const swaggerOptions = {
 
 export const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-export const swaggerSetup = (app) => {
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-};
-
 const app = express();
 const port = process.env.PORT
 
@@ -71,7 +66,6 @@ app.use(cors());
 app.use(morgan('dev'));
 
 DB();
-swaggerSetup(app);
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/courses', courseRouter);
