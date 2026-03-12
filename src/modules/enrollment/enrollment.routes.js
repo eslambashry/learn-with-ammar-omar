@@ -134,6 +134,38 @@ router.patch('/:id/reject', isAuth, isAdmin, enrollmentController.rejectEnrollme
 router.get('/my-courses', isAuth, enrollmentController.getUserEnrollments);
 
 
+/**
+ * @swagger
+ * /api/v1/enrollments/admin/enroll/user:
+ *   post:
+ *     summary: Enroll a user in a course manually (Admin)
+ *     tags: [Enrollments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - courseId
+ *               - userId
+ *             properties:
+ *               courseId:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User enrolled successfully
+ *       400:
+ *         description: Missing fields
+ *       404:
+ *         description: Course not found
+ *       409:
+ *         description: User already enrolled
+ */
 router.post('/admin/enroll/user', isAuth,isAdmin, enrollmentController.AdminEnrollmentUser);
 
 
